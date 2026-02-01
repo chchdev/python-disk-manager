@@ -1,11 +1,12 @@
 import os
 import dotenv
+import discord
 
 def main():
     disk_space = get_disk_space()
     print(f"Disk Space - Free: {disk_space['free']} bytes, Used: {disk_space['used']} bytes, Total: {disk_space['total']} bytes")
 
-    # If disk space is under 50% used, notify via Discord
+    # Notify if disk usage is below 50%
     if disk_space['used'] / disk_space['total'] < 0.5:
         notify_via_discord(disk_space)
 
@@ -20,16 +21,29 @@ def get_disk_space():
 # Notify via Discord
 def notify_via_discord(disk_space):
     dotenv.load_dotenv(dotenv_path=".env")
-    app_id = os.getenv("APPID")
-    pub_key = os.getenv("PUBKEY")
+    token = os.getenv("DISCORD_TOKEN") or os.getenv("PUBKEY")
 
-    if not app_id or not pub_key:
-        print("Discord APPID or PUBKEY not found in environment variables.")
+    if not token:
+        print("Discord token not found in environment variables (DISCORD_TOKEN).")
         return
 
     message = (f"Disk Space Alert!\n"
                f"Free: {disk_space['free']} bytes\n"
                f"Used: {disk_space['used']} bytes\n"
                f"Total: {disk_space['total']} bytes")
-
     
+    # When notify via discord is called send a message in the channel #space-manager with the above message pinging the user 
+
+    intents = discord.Intents.default()
+    client = discord.Client(intents=intents)
+    
+    @client.event
+    async def on_ready():
+        channel = client.get_channel(int())  # Replace with your channel ID
+        user = await client.fetch_user()  # Replace with your user ID
+        message_with_mention = f"{user.mention}\n{message}"
+        if channel:
+            await channel.send(message_with_mention)
+        await client.close()
+
+    client.run(token)
