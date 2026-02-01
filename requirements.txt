@@ -1,0 +1,4 @@
+requirements=[
+    "dotenv",
+    "discord.py"
+]
