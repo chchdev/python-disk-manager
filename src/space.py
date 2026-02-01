@@ -39,8 +39,8 @@ def notify_via_discord(disk_space):
     
     @client.event
     async def on_ready():
-        channel = client.get_channel(int())  # Replace with your channel ID
-        user = await client.fetch_user()  # Replace with your user ID
+        channel = client.get_channel(int(os.getenv("CHANNEL_ID")))  # Replace with your channel ID
+        user = await client.fetch_user(int(os.getenv("USER_ID")))  # Replace with your user ID
         message_with_mention = f"{user.mention}\n{message}"
         if channel:
             await channel.send(message_with_mention)
